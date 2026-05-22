@@ -1,6 +1,5 @@
 provider "aws" {
   region = "us-west-2"
-  profile = "ruppworks-admin"
 }
 
 data "aws_ami" "ubuntu" {
