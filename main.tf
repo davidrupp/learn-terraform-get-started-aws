@@ -17,7 +17,7 @@ data "aws_ami" "ubuntu" {
 resource "aws_instance" "app_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
-  vpc_id        = aws_vpc.default.id
+  subnet        = aws_subnet.public[0].id
 
   tags = {
     Name = "learn-terraform"
