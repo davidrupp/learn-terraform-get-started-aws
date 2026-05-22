@@ -8,7 +8,6 @@ locals {
 # Data source for us-west-2 availability zones
 data "aws_availability_zones" "available" {
   state = "available"
-  region = "us-west-2"
 }
 
 # 1. VPC
@@ -55,7 +54,7 @@ resource "aws_route_table" "main" {
 }
 
 # Associate route table with VPC
-resource "aws_vpc_main_route_table_association" "default" {
+resource "aws_main_route_table_association" "default" {
   vpc_id         = aws_vpc.default.id
   route_table_id = aws_route_table.main.id
 }
@@ -74,14 +73,14 @@ resource "aws_security_group" "default" {
 }
 
 # Associate default SG with VPC
-resource "aws_vpc_default_security_group_association" "default" {
-  vpc_id            = aws_vpc.default.id
+resource "aws_vpc_endpoint_security_group_association" "default" {
+  vpc_endpoint_id            = aws_vpc.default.id
   security_group_id = aws_security_group.default.id
 }
 
 # 5. Public Subnets (one per available AZ in us-west-2 - AWS default behavior)
 resource "aws_subnet" "public" {
-  count = data.aws_availability_zones.available.names
+  count = length(data.aws_availability_zones.available.names)
 
   vpc_id                  = aws_vpc.default.id
   cidr_block              = cidrsubnet(aws_vpc.default.cidr_block, 8, count.index)
@@ -96,7 +95,7 @@ resource "aws_subnet" "public" {
 
 # 6. Public Route Tables (one per subnet - AWS default behavior)
 resource "aws_route_table" "public" {
-  count = data.aws_availability_zones.available.names
+  count = length(data.aws_availability_zones.available.names)
 
   vpc_id = aws_vpc.default.id
 
@@ -112,7 +111,7 @@ resource "aws_route_table" "public" {
 
 # 7. Associate public route tables with public subnets
 resource "aws_route_table_association" "public" {
-  count = data.aws_availability_zones.available.names
+  count = length(data.aws_availability_zones.available.names)
 
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public[count.index].id
