@@ -46,6 +46,7 @@ resource "aws_route_table" "main" {
 
   route {
     cidr_block = local.vpc_cidr
+    gateway_id = "local"
   }
 
   tags = {
@@ -63,7 +64,7 @@ resource "aws_main_route_table_association" "default" {
 # AWS default VPC includes one security group with:
 # - All inbound/outbound traffic allowed (default behavior)
 resource "aws_security_group" "default" {
-  name        = "default"
+  name        = "default-sg-${aws_vpc.default.id}"
   vpc_id      = aws_vpc.default.id
   description = "Default security group for the default VPC"
 
@@ -72,11 +73,6 @@ resource "aws_security_group" "default" {
   }
 }
 
-# Associate default SG with VPC
-resource "aws_vpc_endpoint_security_group_association" "default" {
-  vpc_endpoint_id            = aws_vpc.default.id
-  security_group_id = aws_security_group.default.id
-}
 
 # 5. Public Subnets (one per available AZ in us-west-2 - AWS default behavior)
 resource "aws_subnet" "public" {
